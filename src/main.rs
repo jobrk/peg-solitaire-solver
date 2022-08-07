@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 type Board = [[i8; 7]; 7];
 type Move = (char, usize, usize);
 
@@ -7,12 +9,12 @@ fn print_board(board: &Board) {
         for elt in line {
             match elt {
                 -1 => cur_line.push_str(" "),
-                0 => cur_line.push_str("."),
-                1 => cur_line.push_str("o"),
+                0 => cur_line.push_str("o"),
+                1 => cur_line.push_str("."),
                 _ => {}
             }
         }
-        println!("{}", cur_line)
+        println!("{}", cur_line);
     }
 }
 
@@ -36,7 +38,8 @@ fn count_balls(board: &Board) -> u32 {
             }
         }
     }
-    return count;
+
+    count
 }
 
 fn play_move(mut board: Board, mov: Move) -> Board {
@@ -51,7 +54,8 @@ fn play_move(mut board: Board, mov: Move) -> Board {
             board[i + k][j] = 1 - board[i + k][j]
         }
     }
-    return board;
+
+    board
 }
 
 fn get_available_moves(board: &Board) -> Vec<Move> {
@@ -83,28 +87,41 @@ fn get_available_moves(board: &Board) -> Vec<Move> {
         }
     }
 
-    return moves;
+    moves
 }
 
-fn get_solutions(board: Board, limit: Option<usize>) -> Vec<Vec<Move>> {
+fn get_solutions(board: Board, single: bool) -> Vec<Vec<Move>> {
     let mut solutions = vec![];
     let ball_count = count_balls(&board);
+    let mut cache: HashSet<Board> = HashSet::new();
 
-    get_solutions_helper(board, vec![], &mut solutions, &limit, &ball_count);
+    get_solutions_helper(
+        board,
+        vec![],
+        &mut solutions,
+        &single,
+        &ball_count,
+        &mut cache,
+    );
 
-    return solutions;
+    solutions
 }
 
 fn get_solutions_helper(
     board: Board,
     path: Vec<Move>,
     solutions: &mut Vec<Vec<Move>>,
-    limit: &Option<usize>,
+    single: &bool,
     ball_count: &u32,
+    cache: &mut HashSet<Board>,
 ) {
-    if limit.is_some() && solutions.len() >= limit.unwrap() {
+    if *single && solutions.len() >= 1 {
         return;
     }
+    if *single && cache.contains(&board) {
+        return;
+    }
+    cache.insert(board);
     if path.len() as u32 == *ball_count - 1 {
         solutions.push(path);
         return;
@@ -114,7 +131,7 @@ fn get_solutions_helper(
         let new_board = play_move(board, mov);
         let mut new_path: Vec<Move> = path.clone();
         new_path.push(mov);
-        get_solutions_helper(new_board, new_path, solutions, limit, ball_count)
+        get_solutions_helper(new_board, new_path, solutions, single, ball_count, cache);
     }
 }
 
@@ -128,6 +145,6 @@ fn main() {
         [-1, -1, 1, 1, 1, -1, -1],
         [-1, -1, 1, 1, 1, -1, -1],
     ];
-    let solutions = get_solutions(board, Some(1));
+    let solutions = get_solutions(board, true);
     print_solution(board, solutions.get(0).unwrap())
 }

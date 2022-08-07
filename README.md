@@ -1,6 +1,6 @@
 # Peg solitaire solver in Rust
 
-Solves the board using a simple **backtracking** algorithm and display the first solution as a sequence of board states.
+Solves the board using a **backtracking** algorithm with cache, and display the first solution as a sequence of board states.
 
 Feel free to alterate the board to figure out solutions for other initial configurations.
 
@@ -9,5 +9,3 @@ Feel free to alterate the board to figure out solutions for other initial config
 ```
 $ cargo run --release
 ```
-
-NOTE: This is an unoptimized naive implementation, so do not expect the solver to be blazing fast.
